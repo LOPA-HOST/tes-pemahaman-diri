@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Tes kepribadian AI modern gabungan MBTI, DISC, Big Five, Enneagram, dan analisis karakter mendalam. Hasil instan, desain futuristik, gratis.">
+  <title>AI Personality Matrix | Tes Kepribadian 2026</title>
+  <!-- Google Fonts & Font Awesome Stabil -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js & html2canvas & jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #f0f0ff;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Animated Gradient Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: radial-gradient(circle at 20% 30%, rgba(15, 15, 35, 0.98), #03030a);
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background: radial-gradient(circle, rgba(80, 70, 255, 0.2) 0%, rgba(0, 255, 255, 0.05) 70%);
+      animation: aurora 18s infinite alternate;
+      z-index: -1;
+    }
+
+    @keyframes aurora {
+      0% { transform: translate(0%, 0%) rotate(0deg); opacity: 0.3; }
+      100% { transform: translate(-5%, -5%) rotate(5deg); opacity: 0.7; }
+    }
+
+    canvas#particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Glassmorphism + Neon */
+    .glass-card {
+      background: rgba(20, 20, 40, 0.55);
+      backdrop-filter: blur(14px);
+      border-radius: 2.5rem;
+      border: 1px solid rgba(120, 100, 255, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 230, 250, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 200, 255, 0.2);
+    }
+
+    .neon-btn {
+      background: linear-gradient(135deg, #6a11ff, #2b6eff);
+      border: none;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 12px rgba(80, 100, 255, 0.7);
+    }
+
+    .neon-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 22px #4c7eff;
+      background: linear-gradient(135deg, #7f2eff, #3f7eff);
+    }
+
+    /* Progress Bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #a880ff, #1ee7ff);
+      border-radius: 20px;
+      transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    /* Animations */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      animation: fadeSlideUp 0.5s ease forwards;
+    }
+
+    .option-card {
+      background: rgba(25, 25, 45, 0.7);
+      border-radius: 1.5rem;
+      padding: 14px 20px;
+      margin: 12px 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-card:hover {
+      background: rgba(70, 70, 140, 0.7);
+      transform: translateX(8px);
+      border-left: 4px solid cyan;
+    }
+    .selected-option {
+      background: rgba(80, 110, 255, 0.5);
+      border: 1px solid #2effec;
+      box-shadow: 0 0 12px rgba(0,255,255,0.3);
+    }
+
+    /* loading AI scan */
+    .ai-scan {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      z-index: 200;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .scan-text {
+      font-size: 1.7rem;
+      letter-spacing: 3px;
+      background: linear-gradient(45deg, cyan, violet);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* responsive */
+    @media (max-width: 680px) {
+      .glass-card { margin: 1rem; border-radius: 1.8rem; }
+      .neon-btn { padding: 10px 20px; }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem !important;
+        line-height: 1.2;
+      }
+    }
+
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 16px; }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="bg-gradient"></div>
+
+  <main id="app" style="max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem 3rem; min-height: 100vh;">
+    <!-- LANDING SECTION -->
+    <div id="landingSection" class="fade-up" style="display: flex; flex-direction: column; justify-content: center; min-height: 90vh;">
+      <div class="glass-card" style="padding: 3rem 2rem; text-align: center; max-width: 800px; margin: auto;">
+        <div style="margin-bottom: 1rem;">
+          <i class="fas fa-brain" style="font-size: 3rem; color: #9f7eff; filter: drop-shadow(0 0 8px cyan);"></i>
+        </div>
+        <h1 style="font-size: 3.2rem; font-weight: 800; background: linear-gradient(135deg, #ffffff, #b77eff); -webkit-background-clip: text; background-clip: text; color: transparent;">Discover Your True Personality</h1>
+        <p style="margin: 1.5rem 0; font-size: 1.1rem; color: #ccc;">Gabungan MBTI, DISC, Big5, Enneagram & AI profiling — hasil super akurat.</p>
+        <div style="margin: 2rem auto; max-width: 380px;">
+          <input type="text" id="userNameInput" placeholder="Nama Lengkap" autocomplete="name" style="width:100%; padding: 14px; border-radius: 60px; border: none; background: #1f1f30; color: white; margin-bottom: 20px; text-align: center; font-weight: 500;">
+          <button id="startBtn" class="neon-btn" style="width: 100%;"><i class="fas fa-arrow-right"></i> Mulai Tes AI</button>
+        </div>
+        <div style="font-size: 0.8rem; opacity: 0.6;">⭐ 10.000+ tests · Analisis cerdas 2026</div>
+      </div>
+    </div>
+
+    <!-- QUESTION SECTION -->
+    <div id="quizSection" style="display: none;">
+      <div class="glass-card" style="padding: 2rem 1.8rem;">
+        <div class="flex-between">
+          <span><i class="fas fa-robot" style="color: #4effdc;"></i> AI Personality Suite</span>
+          <span id="qCounter">Pertanyaan 1/40</span>
+        </div>
+        <div class="progress-bar-container"><div class="progress-fill" id="quizProgressFill"></div></div>
+        <div id="questionText" style="font-size: 1.6rem; font-weight: 600; margin: 1.5rem 0;"></div>
+        <div id="optionsContainer"></div>
+        <div class="flex-between" style="margin-top: 30px;">
+          <button id="prevBtn" class="neon-btn" style="background: #2a2a4a; box-shadow: none;"><i class="fas fa-chevron-left"></i> Sebelumnya</button>
+          <button id="nextBtn" class="neon-btn">Selanjutnya <i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div id="resultSection" style="display: none;">
+      <div class="glass-card" style="padding: 2rem;">
+        <div id="personalityResult" class="fade-up"></div>
+        <div style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+          <button id="downloadPDFBtn" class="neon-btn"><i class="fas fa-download"></i> Download PDF</button>
+          <button id="shareResultBtn" class="neon-btn"><i class="fas fa-share-alt"></i> Bagikan</button>
+          <button id="resetAllBtn" class="neon-btn" style="background:#2e2e4e;"><i class="fas fa-redo-alt"></i> Tes Lagi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI SCAN OVERLAY -->
+    <div id="aiScanOverlay" style="display: none;" class="ai-scan">
+      <div><i class="fas fa-microchip" style="font-size: 70px; color: cyan; animation: pulse 1s infinite;"></i></div>
+      <div class="scan-text">🧠 AI Menganalisis Kepribadianmu...</div>
+      <div style="width: 200px; height: 2px; background: #333;"><div style="width: 60%; height: 100%; background: cyan; animation: loadingProgress 1.8s infinite;"></div></div>
+    </div>
+  </main>
+
+  <style>
+    @keyframes pulse { 0% { opacity: 0.4; text-shadow: 0 0 0px cyan; } 100% { opacity: 1; text-shadow: 0 0 14px cyan; } }
+    @keyframes loadingProgress { 0% { width: 10%; } 100% { width: 90%; } }
+  </style>
+
+  <script>
+    // ----------------------------- SANITASI HTML -----------------------------
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    // ----------------------------- 40 SOAL dengan bobot (sudah diperbaiki ext untuk teamwork) -----------------------------
+    const QUESTIONS = [
+      { text: "Saya merasa energi terisi setelah menghabiskan waktu bersama banyak orang.", dims: { ei: 2, discI: 2, ext: 2 } },
+      { text: "Saya lebih suka teori abstrak daripada fakta konkret.", dims: { sn: 2, oceO: 2 } },
+      { text: "Keputusan saya lebih didasari logika daripada perasaan orang.", dims: { tf: 2, discC: 1, agree: -1 } },
+      { text: "Saya suka perencanaan detail dan jadwal ketat.", dims: { jp: 2, discC: 2, consc: 2 } },
+      { text: "Saya mudah membaca suasana hati orang lain.", dims: { tf: -1, enne2: 2, agree: 2 } },
+      { text: "Saya suka memimpin dan mengambil risiko.", dims: { discD: 2, ext: 1, enne8: 2 } },
+      { text: "Saya cenderung perfeksionis dan teliti.", dims: { consc: 2, discC: 1, enne1: 2 } },
+      { text: "Saya sangat kreatif dan penuh ide baru.", dims: { oceO: 3, sn: 2 } },
+      { text: "Saya cenderung cemas akan masa depan.", dims: { neur: 3, enne6: 2 } },
+      { text: "Saya lebih suka bekerja dalam tim.", dims: { ext: 1, discS: 2, agree: 1 } },  // diperbaiki dari -1 ke +1
+      { text: "Saya sering menjadi pusat perhatian.", dims: { discI: 2, ext: 2, enne3: 2 } },
+      { text: "Saya jarang terbuka dengan orang baru.", dims: { ei: -2, ext: -1, enne5: 1 } },
+      { text: "Saya mengutamakan harmoni daripada konflik.", dims: { discS: 2, agree: 2, enne9: 2 } },
+      { text: "Saya menyukai tantangan kompetitif.", dims: { discD: 2, enne3: 1, ext: 1 } },
+      { text: "Saya mudah terharu atau tersentuh.", dims: { tf: -2, neur: 1, enne4: 2 } },
+      { text: "Saya selalu tepat waktu dan terorganisir.", dims: { jp: 2, consc: 2, discC: 1 } },
+      { text: "Saya menikmati eksplorasi ide-ide filosofis.", dims: { oceO: 2, sn: 1, enne5: 1 } },
+      { text: "Saya lebih suka jadwal fleksibel.", dims: { jp: -2, oceO: 1 } },
+      { text: "Saya mudah bersosialisasi dalam pesta.", dims: { ei: 2, discI: 2, ext: 2 } },
+      { text: "Saya memikirkan keputusan secara berhari-hari.", dims: { jp: -1, neur: 1, enne6: 1 } },
+      { text: "Saya sangat mandiri dan tidak suka aturan.", dims: { discD: -1, enne8: 1, consc: -2 } },
+      { text: "Saya suka menolong orang lain tanpa pamrih.", dims: { agree: 2, enne2: 2, discS: 1 } },
+      { text: "Saya cenderung pesimis.", dims: { neur: 2, enne4: 1 } },
+      { text: "Saya senang mempelajari hal teknis baru.", dims: { oceO: 1, sn: -1, enne5: 1 } },
+      { text: "Saya mudah marah jika diganggu.", dims: { neur: 1, agree: -2 } },
+      { text: "Saya suka menjadi role model.", dims: { discD: 1, enne1: 2, consc: 1 } },
+      { text: "Saya lebih banyak diam dalam rapat.", dims: { ei: -2, discS: 1, ext: -1 } },
+      { text: "Saya memerhatikan detail kecil.", dims: { consc: 2, sn: 1, discC: 1 } },
+      { text: "Saya bisa beradaptasi cepat.", dims: { oceO: 1, jp: -1 } },
+      { text: "Saya cenderung dramatis dan emosional.", dims: { neur: 2, tf: -1, enne4: 2 } },
+      { text: "Saya menyukai rutinitas stabil.", dims: { discS: 2, consc: 1, jp: 1 } },
+      { text: "Saya ingin menjadi sukses secara finansial.", dims: { enne3: 2, discD: 1 } },
+      { text: "Saya sulit mengatakan tidak.", dims: { discS: 1, agree: 2, enne9: 1 } },
+      { text: "Saya sering merasa tidak dipahami.", dims: { enne4: 2, neur: 1 } },
+      { text: "Saya suka berdebat untuk menemukan kebenaran.", dims: { discD: 1, tf: 1, enne8: 1 } },
+      { text: "Saya pendengar yang baik.", dims: { discS: 2, agree: 2, enne2: 1 } },
+      { text: "Saya suka menulis atau menggambar.", dims: { oceO: 2, enne4: 1 } },
+      { text: "Saya sangat waspada terhadap bahaya.", dims: { neur: 2, enne6: 2 } },
+      { text: "Saya sering memulai proyek baru.", dims: { oceO: 1, discD: 1, jp: -1 } },
+      { text: "Saya menghargai ketertiban dan tradisi.", dims: { consc: 1, jp: 1, discC: 1 } }
+    ];
+
+    let scores = {
+      ei:0, sn:0, tf:0, jp:0,
+      discD:0, discI:0, discS:0, discC:0,
+      oceO:0, consc:0, ext:0, agree:0, neur:0,
+      enne1:0, enne2:0, enne3:0, enne4:0, enne5:0, enne6:0, enne7:0, enne8:0, enne9:0
+    };
+    
+    let userAnswers = new Array(QUESTIONS.length).fill(null);
+    let currentQ = 0;
+    let userName = "";
+    let submittedSpreadsheet = false;
+
+    // DOM elements
+    const landingDiv = document.getElementById('landingSection');
+    const quizDiv = document.getElementById('quizSection');
+    const resultDiv = document.getElementById('resultSection');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const userNameInput = document.getElementById('userNameInput');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const qCounterSpan = document.getElementById('qCounter');
+    const progressFill = document.getElementById('quizProgressFill');
+    const aiScan = document.getElementById('aiScanOverlay');
+    
+    const options = ["Sangat Tidak Setuju", "Tidak Setuju", "Netral", "Setuju", "Sangat Setuju"];
+    const optionValues = [-2, -1, 0, 1, 2];
+    
+    function renderQuestion() {
+      const q = QUESTIONS[currentQ];
+      questionText.innerText = `${currentQ+1}. ${q.text}`;
+      qCounterSpan.innerText = `Pertanyaan ${currentQ+1}/${QUESTIONS.length}`;
+      let progressPercent = ((currentQ+1)/QUESTIONS.length)*100;
+      progressFill.style.width = `${progressPercent}%`;
+      
+      let saved = userAnswers[currentQ];
+      optionsContainer.innerHTML = '';
+      options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = `option-card ${saved === idx ? 'selected-option' : ''}`;
+        div.innerHTML = `<span style="font-weight:500;">${opt}</span>`;
+        div.onclick = () => selectOption(idx);
+        optionsContainer.appendChild(div);
+      });
+      prevBtn.disabled = (currentQ === 0);
+    }
+    
+    function selectOption(optIndex) {
+      userAnswers[currentQ] = optIndex;
+      renderQuestion();
+    }
+    
+    function updateScoresFromAnswers() {
+      for(let k in scores) scores[k]=0;
+      for(let i=0; i<userAnswers.length; i++) {
+        let ansVal = userAnswers[i];
+        if(ansVal===null) continue;
+        let weight = optionValues[ansVal];
+        let dims = QUESTIONS[i].dims;
+        for(let key in dims) {
+          if(scores.hasOwnProperty(key)) scores[key] += weight * dims[key];
+        }
+      }
+    }
+    
+    function computeMBTI() {
+      let i_e = scores.ei >=0 ? "E" : "I";
+      let s_n = scores.sn >=0 ? "N" : "S";
+      let t_f = scores.tf >=0 ? "T" : "F";
+      let j_p = scores.jp >=0 ? "J" : "P";
+      return i_e + s_n + t_f + j_p;
+    }
+    function computeDISC() {
+      let discMap = { D: scores.discD, I: scores.discI, S: scores.discS, C: scores.discC };
+      let dominant = Object.keys(discMap).reduce((a,b)=> discMap[a] > discMap[b] ? a : b);
+      return dominant;
+    }
+    function computeEnneagram() {
+      let enneScores = [scores.enne1,scores.enne2,scores.enne3,scores.enne4,scores.enne5,scores.enne6,scores.enne7,scores.enne8,scores.enne9];
+      let maxIdx = enneScores.indexOf(Math.max(...enneScores));
+      return maxIdx+1;
+    }
+    function computeBigFive() {
+      let O = (scores.oceO+12)/24 *100;
+      let C = (scores.consc+12)/24*100;
+      let E = (scores.ext+16)/32*100;
+      let A = (scores.agree+12)/24*100;
+      let N = (scores.neur+14)/28*100;
+      return { 
+        openness: Math.min(100,Math.max(0,O)), 
+        conscientiousness: Math.min(100,Math.max(0,C)), 
+        extraversion: Math.min(100,Math.max(0,E)), 
+        agreeableness: Math.min(100,Math.max(0,A)), 
+        neuroticism: Math.min(100,Math.max(0,N)) 
+      };
+    }
+    
+    function generatePersonalityReport(name, mbti, disc, enneagram, big5) {
+      let strengths = "", weaknesses = "", career = "", leadership = "", creativity = "", stress = "";
+      if(mbti.includes("N")) strengths+="Visioner, Kreatif; "; else strengths+="Praktis, Realistis; ";
+      if(disc=="D") strengths+="Tegas, Ambisius; "; else if(disc=="I") strengths+="Komunikatif, Optimis; ";
+      if(enneagram==2) strengths+="Empati, Pemaaf;";
+      if(big5.extraversion>60) strengths+=" Energi sosial tinggi";
+      weaknesses = (big5.neuroticism>55)?"Cenderung overthinking & sensitif":"Kadang kurang fleksibel";
+      career = (disc=="D")?"CEO, Entrepreneur, Manajer":(disc=="I")?"Marketing, Public Relations, Artis":(mbti.includes("T"))?"Analis, Engineer":"Konselor, Psikolog";
+      leadership = (disc=="D")?"Visioner dan tegas":(disc=="S")?"Melayani dan kolaboratif":"Inspiratif & demokratis";
+      creativity = big5.openness>70?"Sangat Tinggi (inovator)":big5.openness>45?"Moderat":"Terstruktur dan praktis";
+      stress = (big5.neuroticism>65)?"Meditasi dan journaling":(disc=="C")?"Membuat checklist":"Olahraga & bersosialisasi";
+      let quote = `“${name}, keunikanmu adalah kombinasi langka dari ${mbti} & tipe Enneagram ${enneagram}. Teruslah berkembang!”`;
+      return { strengths, weaknesses, career, leadership, creativity, stress, quote };
+    }
+    
+    async function finishTestAndShowResult() {
+      updateScoresFromAnswers();
+      let mbtiType = computeMBTI();
+      let discType = computeDISC();
+      let enneagramType = computeEnneagram();
+      let bigFive = computeBigFive();
+      let report = generatePersonalityReport(userName, mbtiType, discType, enneagramType, bigFive);
+      
+      let safeName = escapeHTML(userName);
+      let html = `<h2 style="font-size:2rem;">✨ ${safeName}, Personalitas AI ✨</h2>
+      <div class="grid-2" style="margin:20px 0;">
+        <div><i class="fas fa-chart-line"></i> MBTI: <strong>${mbtiType}</strong></div>
+        <div><i class="fas fa-chart-pie"></i> DISC: <strong>${discType}</strong></div>
+        <div><i class="fas fa-seedling"></i> Enneagram: <strong>Tipe ${enneagramType}</strong></div>
+      </div>
+      <h3>Big Five (OCEAN)</h3><canvas id="bigFiveChart" height="150"></canvas>
+      <div><strong>AI Summary:</strong> Kelebihan: ${escapeHTML(report.strengths)} <br> Perbaikan: ${escapeHTML(report.weaknesses)}</div>
+      <div><strong>💼 Potensi Karir:</strong> ${escapeHTML(report.career)}</div>
+      <div><strong>🏆 Gaya Kepemimpinan:</strong> ${escapeHTML(report.leadership)}</div>
+      <div><strong>🎨 Kreativitas:</strong> ${escapeHTML(report.creativity)}</div>
+      <div><strong>🧘 Tekanan:</strong> ${escapeHTML(report.stress)}</div>
+      <div><strong>⭐ Motivasi:</strong> ${escapeHTML(report.quote)}</div>
+      <div style="margin-top:20px; background:#1e1e2e; padding:15px; border-radius:20px;"><i class="fas fa-robot"></i> <strong>AI Personality Insight:</strong> Kombinasi tipe ${mbtiType} dan ${discType} membuatmu cenderung ${bigFive.extraversion>60?"ekstrovert energik":"introspektif tenang"}. Kamu memiliki ${bigFive.openness>70?"intelektual tinggi": "grounded realism"}.</div>`;
+      document.getElementById('personalityResult').innerHTML = html;
+      
+      setTimeout(() => {
+        let canvasElem = document.getElementById('bigFiveChart');
+        if(canvasElem) {
+          let ctx = canvasElem.getContext('2d');
+          if(ctx) {
+            new Chart(ctx, { 
+              type: 'radar', 
+              data: { 
+                labels: ['Openness','Consc','Extraversion','Agreeable','Neuroticism'], 
+                datasets: [{ 
+                  label: 'Persentil', 
+                  data: [bigFive.openness, bigFive.conscientiousness, bigFive.extraversion, bigFive.agreeableness, bigFive.neuroticism], 
+                  backgroundColor: 'rgba(80,150,255,0.3)', 
+                  borderColor: '#0ff', 
+                  borderWidth: 2 
+                }] 
+              }, 
+              options: { responsive: true, maintainAspectRatio: true, scales: { r: { beginAtZero: true, max:100, ticks: { color: 'white' } } } } 
+            });
+          }
+        }
+      }, 200);
+      
+      if(!submittedSpreadsheet && userName){
+        submittedSpreadsheet=true;
+        sendToGoogleSheets(userName, mbtiType, discType, enneagramType, bigFive);
+      }
+      
+      // Confetti aman
+      canvasConfetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+    
+    // ---------------- Google Sheets (placeholder, ganti URL) ----------------
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_placeholder/exec"; // GANTI DENGAN WEB APP URL ANDA
+    async function sendToGoogleSheets(name, mbti, disc, enneagram, big5) {
+      const payload = { 
+        name, 
+        timestamp: new Date().toISOString(), 
+        mbti, disc, enneagram, 
+        big5_open: big5.openness, 
+        big5_cons: big5.conscientiousness, 
+        big5_extra: big5.extraversion, 
+        big5_agree: big5.agreeableness, 
+        big5_neuro: big5.neuroticism, 
+        summary: `MBTI ${mbti} DISC ${disc}` 
+      };
+      try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      } catch(e) { console.warn("Spreadsheet not configured", e); }
+    }
+    
+    // navigation
+    nextBtn.onclick = () => {
+      if(userAnswers[currentQ] === null) { alert("Silakan pilih jawaban terlebih dahulu!"); return; }
+      if(currentQ < QUESTIONS.length-1) { 
+        currentQ++; 
+        renderQuestion(); 
+      } else {
+        aiScan.style.display = 'flex';
+        setTimeout(() => {
+          aiScan.style.display = 'none';
+          finishTestAndShowResult();
+          quizDiv.style.display = 'none';
+          resultDiv.style.display = 'block';
+        }, 2000);
+      }
+    };
+    prevBtn.onclick = () => { if(currentQ>0) { currentQ--; renderQuestion(); } };
+    
+    startBtn.onclick = () => {
+      let nameVal = userNameInput.value.trim();
+      if(!nameVal) { alert("Masukkan nama dulu yaa!"); return; }
+      userName = escapeHTML(nameVal);
+      landingDiv.style.display = 'none';
+      quizDiv.style.display = 'block';
+      currentQ=0; 
+      userAnswers.fill(null);
+      renderQuestion();
+    };
+    
+    document.getElementById('resetAllBtn')?.addEventListener('click', ()=>{ location.reload(); });
+    document.getElementById('shareResultBtn')?.addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Hasil Tes Kepribadian AI',
+            text: `Saya ${userName} sudah coba tes kepribadian AI. Hasilnya menarik!`,
+            url: location.href
+          });
+        } catch(e) {}
+      } else {
+        alert('Browser tidak mendukung fitur share, tapi kamu bisa screenshot hasilnya!');
+      }
+    });
+    document.getElementById('downloadPDFBtn')?.addEventListener('click', async () => {
+      const element = document.getElementById('personalityResult');
+      if (!element) return;
+      try {
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0a0a0f' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 190;
+        const pageHeight = 277;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let y = 10;
+        pdf.addImage(imgData, 'PNG', 10, y, imgWidth, imgHeight);
+        pdf.save(`personality-${userName}.pdf`);
+      } catch(err) { console.error("PDF error", err); alert("Gagal generate PDF, coba lagi"); }
+    });
+    
+    // Particle background dengan jumlah dinamis
+    function initParticles() {
+      const canvas = document.getElementById('particles');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      let particleCount = width < 768 ? 35 : 80;
+      let particles = Array(particleCount).fill().map(()=>({
+        x: Math.random()*width, y: Math.random()*height, radius: Math.random()*2+1,
+        dx: (Math.random()-0.5)*0.8, dy: (Math.random()-0.5)*0.5, alpha: Math.random()*0.6
+      }));
+      function animate() {
+        if(!ctx) return;
+        ctx.clearRect(0,0,width,height);
+        particles.forEach(p=>{
+          p.x += p.dx;
+          p.y += p.dy;
+          if(p.x<0) p.x=width;
+          if(p.x>width) p.x=0;
+          if(p.y<0) p.y=height;
+          if(p.y>height) p.y=0;
+          ctx.beginPath();
+          ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+          ctx.fillStyle = `rgba(140, 180, 255, ${p.alpha})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+      window.addEventListener('resize', ()=>{
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        width = canvas.width;
+        height = canvas.height;
+        particleCount = width < 768 ? 35 : 80;
+        particles = Array(particleCount).fill().map(()=>({
+          x: Math.random()*width, y: Math.random()*height, radius: Math.random()*2+1,
+          dx: (Math.random()-0.5)*0.8, dy: (Math.random()-0.5)*0.5, alpha: Math.random()*0.6
+        }));
+      });
+    }
+    initParticles();
+  </script>
+</body>
+</html>
